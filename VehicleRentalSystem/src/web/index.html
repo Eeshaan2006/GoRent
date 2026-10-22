@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GoRent - Vehicle Rental</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%2314b8a6'/%3E%3Cstop offset='1' stop-color='%236366f1'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='40' height='40' rx='11' fill='url(%23g)'/%3E%3Cpath d='M20 7a9 9 0 0 0-9 9c0 6.5 9 17 9 17s9-10.5 9-17a9 9 0 0 0-9-9z' fill='white'/%3E%3Ccircle cx='20' cy='16' r='3.6' fill='%236366f1'/%3E%3C/svg%3E">
+<style>
+:root{
+  --bg:#f4f6fb; --card:#fff; --ink:#0f172a; --muted:#64748b; --line:#e5e9f2;
+  --teal:#14b8a6; --indigo:#6366f1; --navy:#0b1220;
+  --car:linear-gradient(135deg,#6366f1,#8b5cf6); --bike:linear-gradient(135deg,#10b981,#14b8a6); --truck:linear-gradient(135deg,#f59e0b,#f97316);
+  --shadow:0 10px 30px rgba(15,23,42,.08);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Inter,"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink);line-height:1.5}
+button,input,select{font:inherit}
+.wrap{max-width:1180px;margin:0 auto;padding:0 22px}
+
+/* header */
+header{position:sticky;top:0;z-index:20;background:rgba(11,18,32,.92);backdrop-filter:blur(10px)}
+.nav{display:flex;align-items:center;justify-content:space-between;height:68px}
+.brand{display:flex;align-items:center;gap:11px;text-decoration:none}
+.brand svg{width:40px;height:40px;filter:drop-shadow(0 4px 10px rgba(99,102,241,.45))}
+.brand .name{font-size:24px;font-weight:800;color:#fff;letter-spacing:-.5px}
+.brand .name b{background:linear-gradient(90deg,#2dd4bf,#818cf8);-webkit-background-clip:text;background-clip:text;color:transparent}
+.tabs{display:flex;gap:6px;background:rgba(255,255,255,.07);padding:5px;border-radius:14px}
+.tab{border:0;background:transparent;color:#cbd5e1;padding:9px 18px;border-radius:10px;cursor:pointer;font-weight:600;font-size:14px;transition:.2s}
+.tab:hover{color:#fff}
+.tab.on{background:#fff;color:var(--ink)}
+.live{display:flex;align-items:center;gap:8px;color:#94a3b8;font-size:13px}
+.live i{width:8px;height:8px;border-radius:50%;background:#22c55e;box-shadow:0 0 0 4px rgba(34,197,94,.2)}
+
+/* hero */
+.hero{background:radial-gradient(900px 400px at 85% -10%,rgba(99,102,241,.55),transparent),radial-gradient(700px 400px at 0% 110%,rgba(20,184,166,.45),transparent),var(--navy);color:#fff;padding:54px 0 96px;position:relative;overflow:hidden}
+.hero h1{font-size:clamp(32px,5vw,52px);line-height:1.08;letter-spacing:-1.5px;max-width:640px}
+.hero h1 span{background:linear-gradient(90deg,#2dd4bf,#a5b4fc);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero p{margin-top:14px;color:#b6c2d9;max-width:520px;font-size:17px}
+.hero .road{position:absolute;right:-30px;bottom:18px;width:430px;opacity:.16}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:-58px;position:relative;z-index:2}
+.stat{background:var(--card);border-radius:18px;padding:18px 20px;box-shadow:var(--shadow);display:flex;gap:14px;align-items:center}
+.stat .ic{width:46px;height:46px;border-radius:13px;display:grid;place-items:center;font-size:21px;color:#fff}
+.stat .v{font-size:25px;font-weight:800;letter-spacing:-.5px;line-height:1.1}
+.stat .l{font-size:13px;color:var(--muted)}
+
+section{display:none;padding:34px 0 60px}
+section.on{display:block;animation:fade .35s ease}
+@keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+h2{font-size:24px;letter-spacing:-.5px}
+.sub{color:var(--muted);font-size:14px;margin-top:2px}
+
+/* toolbar */
+.toolbar{display:flex;gap:14px;flex-wrap:wrap;align-items:center;justify-content:space-between;margin:20px 0 22px}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{border:1px solid var(--line);background:#fff;color:#334155;padding:8px 16px;border-radius:999px;cursor:pointer;font-weight:600;font-size:14px;transition:.2s}
+.chip:hover{border-color:var(--indigo);color:var(--indigo)}
+.chip.on{background:var(--ink);border-color:var(--ink);color:#fff}
+.search{position:relative}
+.search input{padding:10px 14px 10px 38px;border:1px solid var(--line);border-radius:12px;width:260px;background:#fff;outline:none}
+.search input:focus{border-color:var(--indigo);box-shadow:0 0 0 4px rgba(99,102,241,.12)}
+.search:before{content:"\1F50D";position:absolute;left:13px;top:50%;transform:translateY(-50%);font-size:14px;opacity:.6}
+
+/* vehicle cards */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:20px}
+.vcard{background:var(--card);border-radius:20px;overflow:hidden;box-shadow:0 4px 16px rgba(15,23,42,.06);transition:.25s;border:1px solid var(--line);display:flex;flex-direction:column}
+.vcard:hover{transform:translateY(-5px);box-shadow:var(--shadow)}
+.vtop{height:132px;position:relative;display:grid;place-items:center;color:#fff}
+.vtop.Car{background:var(--car)}.vtop.Bike{background:var(--bike)}.vtop.Truck{background:var(--truck)}
+.vtop svg{width:112px;filter:drop-shadow(0 8px 10px rgba(0,0,0,.25))}
+.vtop:after{content:"";position:absolute;inset:0;background:radial-gradient(circle at 80% 0,rgba(255,255,255,.28),transparent 55%)}
+.badge{position:absolute;top:12px;left:12px;z-index:1;background:rgba(255,255,255,.22);backdrop-filter:blur(6px);padding:4px 12px;border-radius:999px;font-size:12px;font-weight:700}
+.status{position:absolute;top:12px;right:12px;z-index:1;padding:4px 12px;border-radius:999px;font-size:12px;font-weight:700;background:#fff}
+.status.ok{color:#059669}.status.no{color:#dc2626}
+.vbody{padding:18px 18px 20px;display:flex;flex-direction:column;gap:10px;flex:1}
+.vbody h3{font-size:18px;letter-spacing:-.3px}
+.reg{font-family:ui-monospace,Consolas,monospace;font-size:12.5px;background:#f1f5f9;border:1px solid var(--line);padding:2px 9px;border-radius:7px;color:#334155;align-self:flex-start;letter-spacing:.5px}
+.note{font-size:13px;color:var(--muted)}
+.price{display:flex;align-items:baseline;gap:4px;margin-top:auto}
+.price b{font-size:24px;letter-spacing:-.5px}.price span{color:var(--muted);font-size:13px}
+.btn{border:0;cursor:pointer;border-radius:12px;padding:11px 18px;font-weight:700;font-size:14px;transition:.2s;display:inline-flex;align-items:center;justify-content:center;gap:8px}
+.btn.primary{background:linear-gradient(135deg,var(--teal),var(--indigo));color:#fff;box-shadow:0 8px 18px rgba(99,102,241,.3)}
+.btn.primary:hover{transform:translateY(-1px);box-shadow:0 12px 22px rgba(99,102,241,.38)}
+.btn.ghost{background:#f1f5f9;color:#0f172a}.btn.ghost:hover{background:#e2e8f0}
+.btn.danger{background:#fee2e2;color:#b91c1c}.btn.danger:hover{background:#fecaca}
+.btn[disabled]{opacity:.5;cursor:not-allowed;transform:none;box-shadow:none}
+.empty{text-align:center;color:var(--muted);padding:60px 0;grid-column:1/-1}
+
+/* table */
+.panel{background:var(--card);border:1px solid var(--line);border-radius:20px;box-shadow:0 4px 16px rgba(15,23,42,.05);overflow:hidden}
+.scroll{overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:760px}
+th{text-align:left;font-size:12px;text-transform:uppercase;letter-spacing:.7px;color:var(--muted);padding:14px 18px;background:#f8fafc;border-bottom:1px solid var(--line)}
+td{padding:15px 18px;border-bottom:1px solid var(--line);font-size:14px;vertical-align:middle}
+tr:last-child td{border-bottom:0}
+.pill{padding:4px 11px;border-radius:999px;font-size:12px;font-weight:700}
+.pill.act{background:#fef3c7;color:#b45309}.pill.done{background:#dcfce7;color:#15803d}
+.tag{padding:3px 10px;border-radius:8px;font-size:12px;font-weight:700;color:#fff}
+.tag.Car{background:#6366f1}.tag.Bike{background:#10b981}.tag.Truck{background:#f97316}
+
+/* fleet */
+.two{display:grid;grid-template-columns:1.1fr 1fr;gap:22px;margin-top:20px}
+.form{padding:24px;display:grid;gap:16px}
+label{font-size:13px;font-weight:600;color:#334155;display:block;margin-bottom:6px}
+input,select{width:100%;padding:11px 14px;border:1px solid #d6dce8;border-radius:12px;background:#fff;outline:none;transition:.2s}
+input:focus,select:focus{border-color:var(--indigo);box-shadow:0 0 0 4px rgba(99,102,241,.12)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.rule{display:flex;gap:14px;padding:18px 20px;border-bottom:1px solid var(--line);align-items:flex-start}
+.rule:last-child{border-bottom:0}
+.rule .tag{margin-top:2px}
+.rule b{display:block}.rule small{color:var(--muted)}
+
+/* modal */
+.overlay{position:fixed;inset:0;background:rgba(8,12,24,.6);backdrop-filter:blur(5px);display:none;align-items:center;justify-content:center;z-index:50;padding:18px}
+.overlay.on{display:flex}
+.modal{background:#fff;border-radius:24px;width:100%;max-width:470px;max-height:92vh;overflow:auto;box-shadow:0 30px 70px rgba(0,0,0,.35);animation:pop .25s ease}
+@keyframes pop{from{opacity:0;transform:scale(.95) translateY(10px)}to{opacity:1;transform:none}}
+.mhead{padding:22px 24px 16px;display:flex;justify-content:space-between;align-items:flex-start}
+.mhead h3{font-size:20px;letter-spacing:-.4px}
+.x{border:0;background:#f1f5f9;width:34px;height:34px;border-radius:50%;cursor:pointer;font-size:16px}
+.mbody{padding:0 24px 24px;display:grid;gap:14px}
+.stepper{display:flex;align-items:center;gap:10px}
+.stepper button{width:42px;height:42px;border-radius:12px;border:1px solid #d6dce8;background:#fff;font-size:20px;cursor:pointer}
+.stepper button:hover{background:#f1f5f9}
+.stepper input{text-align:center;font-weight:700;font-size:18px}
+.quote{background:linear-gradient(135deg,#f0fdfa,#eef2ff);border:1px solid #dbe4ff;border-radius:16px;padding:16px 18px}
+.quote div{display:flex;justify-content:space-between;font-size:14px;color:#475569;padding:3px 0}
+.quote .tot{border-top:1px dashed #b8c4e6;margin-top:8px;padding-top:10px;color:var(--ink);font-weight:800;font-size:20px}
+.err{background:#fee2e2;color:#b91c1c;padding:10px 14px;border-radius:12px;font-size:14px;display:none}
+
+/* receipt */
+.receipt{padding:26px 28px}
+.rtop{display:flex;align-items:center;justify-content:space-between;border-bottom:2px dashed #d6dce8;padding-bottom:16px;margin-bottom:14px}
+.rtop .brand .name{color:var(--ink)}
+.rtop small{color:var(--muted);text-align:right;display:block}
+.rline{display:flex;justify-content:space-between;padding:7px 0;font-size:14px}
+.rline span:first-child{color:var(--muted)}
+.rline.big{border-top:2px dashed #d6dce8;margin-top:10px;padding-top:14px;font-size:20px;font-weight:800}
+.rline.big span:first-child{color:var(--ink)}
+.thanks{text-align:center;color:var(--muted);font-size:13px;margin-top:14px}
+.ractions{display:flex;gap:10px;padding:0 28px 26px}.ractions .btn{flex:1}
+
+/* toast */
+#toast{position:fixed;left:50%;bottom:28px;transform:translate(-50%,30px);background:var(--ink);color:#fff;padding:13px 22px;border-radius:14px;font-weight:600;opacity:0;pointer-events:none;transition:.3s;z-index:99;box-shadow:0 12px 30px rgba(0,0,0,.3)}
+#toast.on{opacity:1;transform:translate(-50%,0)}
+#toast.bad{background:#b91c1c}
+
+footer{background:var(--navy);color:#94a3b8;text-align:center;padding:26px;font-size:14px}
+footer b{color:#fff}
+
+@media(max-width:860px){.stats{grid-template-columns:repeat(2,1fr)}.two{grid-template-columns:1fr}.live{display:none}.nav{height:auto;padding:12px 0;flex-wrap:wrap;gap:10px}}
+@media(max-width:520px){.search input{width:100%}.search{width:100%}.tab{padding:8px 12px}}
+@media print{
+  body *{visibility:hidden}
+  #receiptBox,#receiptBox *{visibility:visible}
+  #receiptBox{position:absolute;left:0;top:0;width:100%;box-shadow:none}
+  .ractions{display:none}
+}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#14b8a6"/><stop offset="1" stop-color="#6366f1"/></linearGradient>
+    <symbol id="logo" viewBox="0 0 40 40">
+      <rect width="40" height="40" rx="11" fill="url(#lg)"/>
+      <path d="M20 7a9 9 0 0 0-9 9c0 6.5 9 17 9 17s9-10.5 9-17a9 9 0 0 0-9-9z" fill="#fff"/>
+      <circle cx="20" cy="16" r="3.6" fill="#6366f1"/>
+      <path d="M8 34h8M5 30h6" stroke="#fff" stroke-width="2" stroke-linecap="round" opacity=".7"/>
+    </symbol>
+  </defs>
+</svg>
+
+<header>
+  <div class="wrap nav">
+    <a class="brand" href="#"><svg><use href="#logo"/></svg><span class="name">Go<b>Rent</b></span></a>
+    <div class="tabs">
+      <button class="tab on" data-tab="vehicles">Vehicles</button>
+      <button class="tab" data-tab="rentals">Rentals</button>
+      <button class="tab" data-tab="fleet">Fleet</button>
+    </div>
+    <div class="live"><i></i> System online</div>
+  </div>
+</header>
+
+<div class="hero">
+  <svg class="road" viewBox="0 0 430 120" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round"><path d="M0 100h430" /><path d="M10 112h60M110 112h60M210 112h60M310 112h60" stroke-dasharray="1 0" opacity=".6"/><path d="M60 80l12-30h70l24 30M30 80h280" /><circle cx="90" cy="86" r="14"/><circle cx="260" cy="86" r="14"/></svg>
+  <div class="wrap">
+    <h1>Pick a ride. <span>Hit the road.</span></h1>
+    <p>Cars, bikes and trucks, ready when you are. Choose your vehicle, pick the days, and go.</p>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="stats">
+    <div class="stat"><div class="ic" style="background:var(--car)">&#128663;</div><div><div class="v" id="sTotal">0</div><div class="l">Total vehicles</div></div></div>
+    <div class="stat"><div class="ic" style="background:var(--bike)">&#9989;</div><div><div class="v" id="sAvail">0</div><div class="l">Available now</div></div></div>
+    <div class="stat"><div class="ic" style="background:var(--truck)">&#128273;</div><div><div class="v" id="sRent">0</div><div class="l">Currently rented</div></div></div>
+    <div class="stat"><div class="ic" style="background:linear-gradient(135deg,#ec4899,#f43f5e)">&#8377;</div><div><div class="v" id="sRev">0</div><div class="l">Earnings (returned)</div></div></div>
+  </div>
+
+  <!-- VEHICLES -->
+  <section id="vehicles" class="on">
+    <h2>Available vehicles</h2>
+    <p class="sub">Rented vehicles are locked until they are returned.</p>
+    <div class="toolbar">
+      <div class="chips" id="chips">
+        <button class="chip on" data-f="Available">Available</button>
+        <button class="chip" data-f="All">Show all</button>
+        <button class="chip" data-f="Car">Cars</button>
+        <button class="chip" data-f="Bike">Bikes</button>
+        <button class="chip" data-f="Truck">Trucks</button>
+      </div>
+      <div class="search"><input id="q" placeholder="Search model or reg. number"></div>
+    </div>
+    <div class="grid" id="grid"></div>
+  </section>
+
+  <!-- RENTALS -->
+  <section id="rentals">
+    <h2>Rentals</h2>
+    <p class="sub">Return a vehicle to make it available again and get the receipt.</p>
+    <div class="toolbar">
+      <div class="chips" id="rchips">
+        <button class="chip on" data-r="all">All</button>
+        <button class="chip" data-r="active">Active</button>
+        <button class="chip" data-r="done">Returned</button>
+      </div>
+    </div>
+    <div class="panel"><div class="scroll">
+      <table>
+        <thead><tr><th>Rental</th><th>Vehicle</th><th>Customer</th><th>Days</th><th>Amount</th><th>Status</th><th></th></tr></thead>
+        <tbody id="rbody"></tbody>
+      </table>
+    </div></div>
+  </section>
+
+  <!-- FLEET -->
+  <section id="fleet">
+    <h2>Fleet management</h2>
+    <p class="sub">Add vehicles and see how each type is charged.</p>
+    <div class="two">
+      <div class="panel">
+        <form class="form" id="addForm" onsubmit="return false">
+          <h3>Add a vehicle</h3>
+          <div class="row2">
+            <div><label>Registration number</label><input id="aReg" placeholder="TS09XX0000"></div>
+            <div><label>Type</label><select id="aType"><option>Car</option><option>Bike</option><option>Truck</option></select></div>
+          </div>
+          <div><label>Model</label><input id="aModel" placeholder="e.g. Maruti Swift"></div>
+          <div><label>Rental rate per day (&#8377;)</label><input id="aRate" type="number" min="1" placeholder="1500"></div>
+          <div class="err" id="aErr"></div>
+          <button class="btn primary" id="aBtn" type="button">Add to fleet</button>
+        </form>
+      </div>
+      <div class="panel">
+        <div class="rule"><span class="tag Car">Car</span><div><b>10% insurance added</b><small>Total = rate &times; days &times; 1.10</small></div></div>
+        <div class="rule"><span class="tag Bike">Bike</span><div><b>10% off for 7+ days</b><small>Long rentals get a discount automatically</small></div></div>
+        <div class="rule"><span class="tag Truck">Truck</span><div><b>Flat loading fee of &#8377;500</b><small>Total = rate &times; days + 500</small></div></div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<footer><b>GoRent</b> &middot; Vehicle Rental Management System</footer>
+
+<!-- Rent modal -->
+<div class="overlay" id="rentModal">
+  <div class="modal">
+    <div class="mhead"><div><h3 id="mTitle">Rent</h3><div class="sub" id="mSub"></div></div><button class="x" data-close>&#10005;</button></div>
+    <div class="mbody">
+      <div><label>Customer name</label><input id="cName" placeholder="Full name"></div>
+      <div><label>Phone number</label><input id="cPhone" inputmode="numeric" maxlength="10" placeholder="10-digit mobile number"></div>
+      <div><label>Number of days</label>
+        <div class="stepper"><button type="button" id="dMinus">&minus;</button><input id="cDays" type="number" min="1" max="90" value="1"><button type="button" id="dPlus">+</button></div>
+      </div>
+      <div class="quote" id="quote"></div>
+      <div class="err" id="rErr"></div>
+      <button class="btn primary" id="rentBtn">Confirm rental</button>
+    </div>
+  </div>
+</div>
+
+<!-- Receipt modal -->
+<div class="overlay" id="recModal">
+  <div class="modal" id="receiptBox">
+    <div class="receipt" id="receiptContent"></div>
+    <div class="ractions"><button class="btn ghost" data-close>Close</button><button class="btn primary" onclick="window.print()">&#128424; Print receipt</button></div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+const ICONS = {
+  Car:'<svg viewBox="0 0 64 40"><path d="M5 27l4-9c1-2 3-3 5-3h26c2 0 4 1 5 2l8 8c3 0 4 2 4 4v3H5z" fill="currentColor"/><path d="M15 18h12v8H11zM30 18h10l6 8H30z" fill="#0b1220" opacity=".35"/><circle cx="18" cy="32" r="5.5" fill="#0b1220"/><circle cx="48" cy="32" r="5.5" fill="#0b1220"/><circle cx="18" cy="32" r="2" fill="#fff"/><circle cx="48" cy="32" r="2" fill="#fff"/></svg>',
+  Bike:'<svg viewBox="0 0 64 40" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="14" cy="28" r="8"/><circle cx="50" cy="28" r="8"/><path d="M14 28l10-12h14l12 12M30 16l-4 12h12M38 16l-3-6h-7"/></svg>',
+  Truck:'<svg viewBox="0 0 64 40"><rect x="3" y="8" width="35" height="22" rx="3" fill="currentColor"/><path d="M41 14h11l8 9v7H41z" fill="currentColor" opacity=".85"/><path d="M45 17h6l5 6h-11z" fill="#0b1220" opacity=".35"/><circle cx="16" cy="32" r="5.5" fill="#0b1220"/><circle cx="50" cy="32" r="5.5" fill="#0b1220"/><circle cx="16" cy="32" r="2" fill="#fff"/><circle cx="50" cy="32" r="2" fill="#fff"/></svg>'
+};
+const $ = id => document.getElementById(id);
+const money = n => '\u20B9' + Number(n).toLocaleString('en-IN', {minimumFractionDigits:0, maximumFractionDigits:2});
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+let vehicles = [], rentals = [], filter = 'Available', rfilter = 'all', current = null, quoteTimer = null;
+
+async function api(url, opts) {
+  const res = await fetch(url, opts);
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || 'Request failed');
+  return data;
+}
+const post = (url, obj) => api(url, {method:'POST', headers:{'Content-Type':'application/x-www-form-urlencoded'}, body:new URLSearchParams(obj).toString()});
+
+function toast(msg, bad) {
+  const t = $('toast'); t.textContent = msg; t.className = 'on' + (bad ? ' bad' : '');
+  clearTimeout(toast.t); toast.t = setTimeout(() => t.className = '', 2800);
+}
+
+async function load() {
+  [vehicles, rentals] = await Promise.all([api('/api/vehicles'), api('/api/rentals')]);
+  renderStats(); renderGrid(); renderRentals();
+}
+
+function renderStats() {
+  $('sTotal').textContent = vehicles.length;
+  const av = vehicles.filter(v => v.available).length;
+  $('sAvail').textContent = av; $('sRent').textContent = vehicles.length - av;
+  $('sRev').textContent = money(rentals.filter(r => !r.active).reduce((s, r) => s + r.amount, 0));
+}
+
+function renderGrid() {
+  const q = $('q').value.trim().toLowerCase();
+  const list = vehicles.filter(v => {
+    if (filter === 'Available' && !v.available) return false;
+    if (['Car','Bike','Truck'].includes(filter) && v.type !== filter) return false;
+    return !q || v.model.toLowerCase().includes(q) || v.reg.toLowerCase().includes(q);
+  });
+  $('grid').innerHTML = list.length ? list.map(v => `
+    <div class="vcard">
+      <div class="vtop ${v.type}">
+        <span class="badge">${v.type}</span>
+        <span class="status ${v.available ? 'ok' : 'no'}">${v.available ? '\u25CF Available' : '\u25CF Rented'}</span>
+        ${ICONS[v.type]}
+      </div>
+      <div class="vbody">
+        <h3>${esc(v.model)}</h3>
+        <span class="reg">${esc(v.reg)}</span>
+        <div class="note">${esc(v.note)}</div>
+        <div class="price"><b>${money(v.rate)}</b><span>/ day</span></div>
+        ${v.available
+          ? `<button class="btn primary" onclick="openRent('${v.reg}')">Rent now</button>`
+          : `<button class="btn ghost" disabled>Currently rented</button>`}
+      </div>
+    </div>`).join('') : '<div class="empty">No vehicles match. Try another filter.</div>';
+}
+
+function renderRentals() {
+  const list = rentals.filter(r => rfilter === 'all' || (rfilter === 'active' ? r.active : !r.active));
+  $('rbody').innerHTML = list.length ? list.map(r => `
+    <tr>
+      <td><b>#${r.id}</b><div class="note">${esc(r.rentedAt)}</div></td>
+      <td>${esc(r.model)}<div class="note"><span class="tag ${r.type}">${r.type}</span> ${esc(r.reg)}</div></td>
+      <td>${esc(r.customer)}<div class="note">${esc(r.phone)}</div></td>
+      <td>${r.days}</td>
+      <td><b>${money(r.amount)}</b></td>
+      <td><span class="pill ${r.active ? 'act' : 'done'}">${r.active ? 'Active' : 'Returned'}</span></td>
+      <td style="text-align:right">${r.active
+        ? `<button class="btn danger" onclick="doReturn('${r.reg}')">Return</button>`
+        : `<button class="btn ghost" onclick="showReceipt(${r.id})">Receipt</button>`}</td>
+    </tr>`).join('') : '<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:44px">No rentals yet. Rent a vehicle to get started.</td></tr>';
+}
+
+/* tabs & filters */
+document.querySelectorAll('.tab').forEach(b => b.onclick = () => {
+  document.querySelectorAll('.tab').forEach(x => x.classList.toggle('on', x === b));
+  document.querySelectorAll('section').forEach(s => s.classList.toggle('on', s.id === b.dataset.tab));
+});
+$('chips').onclick = e => { const c = e.target.closest('.chip'); if (!c) return;
+  filter = c.dataset.f; document.querySelectorAll('#chips .chip').forEach(x => x.classList.toggle('on', x === c)); renderGrid(); };
+$('rchips').onclick = e => { const c = e.target.closest('.chip'); if (!c) return;
+  rfilter = c.dataset.r; document.querySelectorAll('#rchips .chip').forEach(x => x.classList.toggle('on', x === c)); renderRentals(); };
+$('q').oninput = renderGrid;
+
+/* rent modal */
+function openRent(reg) {
+  current = vehicles.find(v => v.reg === reg); if (!current) return;
+  $('mTitle').textContent = current.model;
+  $('mSub').textContent = current.type + ' \u00B7 ' + current.reg + ' \u00B7 ' + money(current.rate) + '/day';
+  $('cName').value = ''; $('cPhone').value = ''; $('cDays').value = 1; $('rErr').style.display = 'none';
+  $('rentModal').classList.add('on'); updateQuote(); $('cName').focus();
+}
+function updateQuote() {
+  clearTimeout(quoteTimer);
+  quoteTimer = setTimeout(async () => {
+    const d = parseInt($('cDays').value, 10);
+    if (!current || !(d >= 1 && d <= 90)) { $('quote').innerHTML = '<div>Enter days between 1 and 90</div>'; return; }
+    try {
+      const q = await api('/api/quote?reg=' + encodeURIComponent(current.reg) + '&days=' + d);
+      $('quote').innerHTML = `<div><span>${money(current.rate)} \u00D7 ${d} day${d > 1 ? 's' : ''}</span><span>${money(q.base)}</span></div>
+        <div><span>${esc(q.note)}</span><span></span></div>
+        <div class="tot"><span>Total</span><span>${money(q.total)}</span></div>`;
+    } catch (e) { $('quote').innerHTML = '<div>' + esc(e.message) + '</div>'; }
+  }, 120);
+}
+$('cDays').oninput = updateQuote;
+$('dMinus').onclick = () => { $('cDays').value = Math.max(1, (parseInt($('cDays').value, 10) || 1) - 1); updateQuote(); };
+$('dPlus').onclick = () => { $('cDays').value = Math.min(90, (parseInt($('cDays').value, 10) || 0) + 1); updateQuote(); };
+$('rentBtn').onclick = async () => {
+  const err = $('rErr'); err.style.display = 'none';
+  try {
+    const r = await post('/api/rent', {reg:current.reg, customer:$('cName').value, phone:$('cPhone').value, days:$('cDays').value});
+    $('rentModal').classList.remove('on');
+    toast('Booked! ' + r.model + ' for ' + r.days + ' day(s) \u2013 ' + money(r.amount));
+    await load();
+  } catch (e) { err.textContent = e.message; err.style.display = 'block'; await load(); }
+};
+
+/* return & receipt */
+async function doReturn(reg) {
+  try { const r = await post('/api/return', {reg}); await load(); toast('Vehicle returned and available again'); receipt(r); }
+  catch (e) { toast(e.message, true); }
+}
+function showReceipt(id) { const r = rentals.find(x => x.id === id); if (r) receipt(r); }
+function receipt(r) {
+  $('receiptContent').innerHTML = `
+    <div class="rtop"><a class="brand"><svg><use href="#logo"/></svg><span class="name">Go<b>Rent</b></span></a>
+      <small>Receipt #${r.id}<br>${esc(r.returnedAt || r.rentedAt)}</small></div>
+    <div class="rline"><span>Customer</span><span>${esc(r.customer)}</span></div>
+    <div class="rline"><span>Phone</span><span>${esc(r.phone)}</span></div>
+    <div class="rline"><span>Vehicle</span><span>${esc(r.model)} (${r.type})</span></div>
+    <div class="rline"><span>Reg. number</span><span>${esc(r.reg)}</span></div>
+    <div class="rline"><span>Rented on</span><span>${esc(r.rentedAt)}</span></div>
+    <div class="rline"><span>Returned on</span><span>${esc(r.returnedAt || '-')}</span></div>
+    <div class="rline"><span>Rate \u00D7 days</span><span>${money(r.rate)} \u00D7 ${r.days} = ${money(r.base)}</span></div>
+    <div class="rline"><span>Adjustment</span><span>${esc(r.note)}</span></div>
+    <div class="rline big"><span>Total paid</span><span>${money(r.amount)}</span></div>
+    <div class="thanks">Thank you for choosing GoRent. Safe travels!</div>`;
+  $('recModal').classList.add('on');
+}
+
+/* add vehicle */
+$('aBtn').onclick = async () => {
+  const err = $('aErr'); err.style.display = 'none';
+  try {
+    const v = await post('/api/vehicles', {reg:$('aReg').value, model:$('aModel').value, type:$('aType').value, rate:$('aRate').value});
+    ['aReg','aModel','aRate'].forEach(i => $(i).value = '');
+    toast(v.model + ' added to the fleet'); await load();
+  } catch (e) { err.textContent = e.message; err.style.display = 'block'; }
+};
+
+/* modal close */
+document.querySelectorAll('[data-close]').forEach(b => b.onclick = () => b.closest('.overlay').classList.remove('on'));
+document.querySelectorAll('.overlay').forEach(o => o.onclick = e => { if (e.target === o) o.classList.remove('on'); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') document.querySelectorAll('.overlay').forEach(o => o.classList.remove('on')); });
+
+load().catch(e => toast('Cannot reach server: ' + e.message, true));
+setInterval(() => { if (!document.querySelector('.overlay.on')) load().catch(()=>{}); }, 8000);
+</script>
+</body>
+</html>
